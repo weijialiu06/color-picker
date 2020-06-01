@@ -1,6 +1,6 @@
 {
   "name": "circular-color-picker",
-  "version": "1.0.12",
+  "version": "1.0.13",
   "description": "圆环颜色选择器",
   "main": "./dist/color-picker.js",
   "files": [

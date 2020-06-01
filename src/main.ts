@@ -45,6 +45,6 @@ colorWheel.addListener('colorChange', (data: IColorValue) => {
 });
 
 setTimeout(() => {
-  colorWheel.setDotPosition(300, 400);
+  colorWheel.setColor("#3769ff");
 }, 2000);
 export { };

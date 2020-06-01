@@ -316,4 +316,22 @@ export default class ColorWheel extends EventEmitter {
       this.emit("colorChange", colorValue);
     }, 0);
   }
+
+  public setColor(hexColor: string): void {
+    const { offsetWidth, offsetHeight } = this.canvas;
+    for (let x = 0; x <= offsetWidth; x++) {
+      for (let y = 0; y <= offsetHeight; y++) {
+        const ctx: CanvasRenderingContext2D = this.canvas.getContext('2d') as CanvasRenderingContext2D;
+        const info: ImageData = ctx.getImageData(x, y, 1, 1);
+        const { data } = info;
+        const r = data[0], g = data[1], b = data[2];
+        const hex = colorRGBtoHex({ r, g, b });
+        if (hexColor == hex) {
+          this.setDotPosition(x, y);
+          return;
+        }
+      }
+    }
+    console.warn(`color picker can not find the color: ${hexColor}`);
+  }
 }
