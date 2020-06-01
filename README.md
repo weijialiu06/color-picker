@@ -14,10 +14,19 @@ npm i circular-color-picker --save-dev
 const colorWheel = new ColorWheel(config);
 // 通过监听colorChange 事件获取但前的颜色值
 interface IColorValue {
-  r: number;
-  g: number;
-  b: number;
-  hex: string; // 十六进制颜色
+  // rgb颜色
+  rgb: {
+    r: number,
+    g: number,
+    b: number,
+  };
+  // 十六进制颜色
+  hex: string;
+  // 滑块的位置信息
+  dotPosition: {
+    left: number,
+    top: number,
+  };
 }
 colorWheel.addListener('colorChange', (data: IColorValue) => {
   console.log(data);
@@ -26,12 +35,13 @@ colorWheel.addListener('colorChange', (data: IColorValue) => {
 
 ## config options
 
-| config         | 说明                                     | 是否必须 |
-| -------------- | ---------------------------------------- | -------- |
-| containerId    | canvas 色环需要挂载的父元素 id           | 是       |
-| size           | 颜色画板圆的直径大小                     | 否       |
-| dotClass       | 滑块的 class 样式，需加上!important 覆盖 | 否       |
-| pipeCircleSize | 中间镂空部分圆的直径大小                 | 否       |
+| config         | 说明                                        | 是否必须 |
+| -------------- | ------------------------------------------- | -------- |
+| containerId    | canvas 色环需要挂载的父元素 id              | 是       |
+| size           | 颜色画板圆的直径大小                        | 否       |
+| dotClass       | 滑块的 class 样式，需加上!important 覆盖    | 否       |
+| pipeCircleSize | 中间镂空部分圆的直径大小                    | 否       |
+| dotPosition    | {left: number, top: number } 滑块默认的位置 | 否       |
 
 ## Events
 
@@ -44,6 +54,12 @@ colorPicker.addListener('colorChange', (data: IColorValue) => {
   console.log(data);
 });
 ```
+
+## Events
+
+### setDotPosition(left: number, y: number)
+
+设置滑块的位置,
 
 ## demo
 
@@ -66,11 +82,19 @@ export default class App extends Vue {
       containerId: 'color-picker',
       pipeCircleSize: 100,
       dotClass: 'dot-class',
+      dotPositon: {
+        left: 100,
+        top: 400,
+      },
     });
 
     colorWheel.addListener('colorChange', (data: IColorValue) => {
       console.log(data);
     });
+
+    setTimeout(() => {
+      colorWheel.setDotPosition(300, 400);
+    }, 3000);
   }
 }
 ```

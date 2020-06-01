@@ -4,6 +4,11 @@ export interface IValue {
   b: number;
 }
 
+export interface IPosition {
+  left: number;
+  top: number;
+}
+
 export interface IConfig {
   size?: number;
   containerId: string;
@@ -12,6 +17,7 @@ export interface IConfig {
   dotSize?: number;
   dotColor?: string;
   dotClass?: string;
+  dotPositon?: IPosition;
 }
 
 export interface IColorWheelConfig {
@@ -22,8 +28,5 @@ export interface IColorWheelConfig {
   dotSize: number;
   dotColor: string;
   dotClass?: string;
-}
-
-export interface IColorWheel {
-  getValue(positionX: number, positionY: number): IValue;
+  dotPositon?: IPosition;
 }

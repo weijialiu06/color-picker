@@ -1,8 +1,8 @@
 import { EventEmitter } from 'fbemitter';
 import { degreesToRadians, createCircleDom, getTwoPointsDistance, IPoint, colorRGBtoHex, getLineEquationByTwoPoints, findCircleLineIntersections, getLineYByXvalue } from '../utils';
-import { IColorWheel, IColorWheelConfig, IConfig } from './interface';
+import { IColorWheelConfig, IConfig } from './interface';
 
-export default class ColorWheel extends EventEmitter implements IColorWheel {
+export default class ColorWheel extends EventEmitter {
 
   private dotDraggable: boolean = false;
 
@@ -19,7 +19,7 @@ export default class ColorWheel extends EventEmitter implements IColorWheel {
   public dot!: HTMLElement;
 
   // 圆心
-  get circleCenterAxis(): { x: number, y: number } {
+  get circleCenterCoord(): { x: number, y: number } {
     const { container, dot } = this;
     return {
       x: (container.offsetWidth - dot.offsetWidth) / 2,
@@ -76,17 +76,23 @@ export default class ColorWheel extends EventEmitter implements IColorWheel {
     }
   }
 
-  public getValue(positionX: number, positionY: number) {
+  public getData(positionX: number, positionY: number) {
     const ctx: CanvasRenderingContext2D = this.canvas.getContext('2d') as CanvasRenderingContext2D;
     let info: ImageData = ctx.getImageData(positionX, positionY, 1, 1);
     let { data } = info;
     let r = data[0], g = data[1], b = data[2];
     let hexColor = colorRGBtoHex({ r, g, b });
     return {
-      r: data[0],
-      g: data[1],
-      b: data[2],
-      hex: hexColor
+      rgb: {
+        r: data[0],
+        g: data[1],
+        b: data[2],
+      },
+      hex: hexColor,
+      dotPosition: {
+        left: positionX,
+        top: positionY
+      }
     };
   }
 
@@ -101,6 +107,16 @@ export default class ColorWheel extends EventEmitter implements IColorWheel {
     document.addEventListener("pointerdown", this.moveStart.bind(this), false);
     document.addEventListener("pointermove", this.dotMoveHandler.bind(this), false);
     document.addEventListener("pointerup", this.moveEnd.bind(this), false);
+    this.setDotDefaultPosition();
+  }
+
+  private setDotDefaultPosition() {
+    const { dotPositon } = this.config;
+    if (dotPositon && dotPositon.left && dotPositon.top) {
+      this.setDotPosition(Number(dotPositon.left), Number(dotPositon.top));
+    } else {
+      this.setDotPosition(410, 407);
+    }
   }
 
   private drawColorWheel() {
@@ -201,11 +217,12 @@ export default class ColorWheel extends EventEmitter implements IColorWheel {
   }
 
   addDragableDot() {
-    const { dotSize, dotColor, size } = this.config;
+    const { dotSize, dotColor, size, dotClass } = this.config;
     this.dot = document.createElement("div");
     this.dot.style.position = "absolute";
     this.dot.style.height = "0";
     this.dot.style.width = "0";
+
     this.dot.style.left = (size / 2 - dotSize / 2) / 2 - 30 + 'px';
     this.dot.style.top = (size / 2 - dotSize / 2) / 2 - 30 + 'px';
 
@@ -218,10 +235,10 @@ export default class ColorWheel extends EventEmitter implements IColorWheel {
     el.style.left = `${(-(dotSize + 4)) / 2}px`;
     el.style.top = `${(- (dotSize + 4)) / 2}px`;
     el.style.zIndex = '3';
-    const addClass = this.config.dotClass;
-    if (addClass) {
+
+    if (dotClass) {
       const _class = el.getAttribute('class');
-      el.setAttribute('class', _class ? `${_class} ${addClass}` : addClass);
+      el.setAttribute('class', _class ? `${_class} ${dotClass}` : dotClass);
     }
     this.dot.appendChild(el);
     this.container.appendChild(this.dot);
@@ -247,38 +264,8 @@ export default class ColorWheel extends EventEmitter implements IColorWheel {
   setPositionByEvent(event: MouseEvent) {
     const x = event.clientX - this.boundingClientRect.left;
     const y = event.clientY - this.boundingClientRect.top;
-    const p1 = { x, y };
-    const p2 = this.circleCenterAxis; // 圆心
 
-    /**
-     * 限制大圆的范围
-     */
-    const line = getLineEquationByTwoPoints(p1, p2);
-    // 直线和大圆的交点x的值
-    const circleLineIntersections = findCircleLineIntersections(this.bigCircleRadius - 1, p2.x, p2.y, line.m, line.n);
-    // 直线和小圆的交点x的值（中间白色的那个）
-    const circleLineIntersections2 = findCircleLineIntersections(this.smallCircleRadius - 1, p2.x, p2.y, line.m, line.n);
-    if (circleLineIntersections.length === 0) {
-      return;
-    } else if (circleLineIntersections.length === 1) { // 圆的切线
-      this.setDotPosition(x, y);
-    } else {
-      let _x: number = 0;
-      let _y: number = 0;
-      if (getTwoPointsDistance(p1, p2) > this.bigCircleRadius || getTwoPointsDistance(p1, p2) < this.smallCircleRadius) { //说明在大圆外头或者小圆里头
-        if (getTwoPointsDistance(p1, p2) > this.bigCircleRadius) {
-          _x = p1.x >= p2.x ? circleLineIntersections[0] : circleLineIntersections[1];
-          _y = getLineYByXvalue(line, _x);
-        } else {
-          _x = p1.x >= p2.x ? circleLineIntersections2[0] : circleLineIntersections2[1];
-          _y = getLineYByXvalue(line, _x);
-        }
-        this.setDotPosition(_x, _y);
-      } else {
-        this.setDotPosition(x, y);
-      }
-    }
-
+    this.setDotPosition(x, y);
 
   }
 
@@ -295,10 +282,38 @@ export default class ColorWheel extends EventEmitter implements IColorWheel {
   }
 
 
-  setDotPosition(x: number, y: number) {
-    this.dot.style.left = x + 'px';
-    this.dot.style.top = y + 'px';
-    const colorValue = this.getValue(x, y);
-    this.emit("colorChange", colorValue);
+  public setDotPosition(x: number, y: number) {
+    let _x = x - 0, _y = y - 0;
+
+    const p1 = { x, y };
+    const p2 = this.circleCenterCoord; // 圆心
+
+    const line = getLineEquationByTwoPoints(p1, p2);
+    // 直线和大圆的交点x的值
+    const circleLineIntersections = findCircleLineIntersections(this.bigCircleRadius - 1, p2.x, p2.y, line.m, line.n);
+    // 直线和小圆的交点x的值（中间白色的那个）
+    const circleLineIntersections2 = findCircleLineIntersections(this.smallCircleRadius - 1, p2.x, p2.y, line.m, line.n);
+    if (circleLineIntersections.length === 0) {
+      return;
+    } else if (circleLineIntersections.length === 1) { // 圆的切线
+
+    } else {
+      if (getTwoPointsDistance(p1, p2) > this.bigCircleRadius || getTwoPointsDistance(p1, p2) < this.smallCircleRadius) { //说明在大圆外头或者小圆里头
+        if (getTwoPointsDistance(p1, p2) > this.bigCircleRadius) {
+          _x = p1.x >= p2.x ? circleLineIntersections[0] : circleLineIntersections[1];
+          _y = getLineYByXvalue(line, _x);
+        } else {
+          _x = p1.x >= p2.x ? circleLineIntersections2[0] : circleLineIntersections2[1];
+          _y = getLineYByXvalue(line, _x);
+        }
+      }
+    }
+
+    this.dot.style.left = _x + 'px';
+    this.dot.style.top = _y + 'px';
+    const colorValue = this.getData(_x, _y);
+    setTimeout(() => {
+      this.emit("colorChange", colorValue);
+    }, 0);
   }
 }
