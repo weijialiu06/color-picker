@@ -29,7 +29,7 @@ interface IRgbcolor {
 export function colorRGBtoHex(color: IRgbcolor) {
   const { r, g, b } = color;
   const hex = "#" + ((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1);
-  return hex;
+  return hex.toLocaleLowerCase();
 }
 
 

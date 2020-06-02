@@ -33,6 +33,8 @@ interface IColorValue {
     top: number,
   };
 }
+//@ts-ignore
+window.colorWheel = colorWheel;
 colorWheel.addListener('colorChange', (data: IColorValue) => {
   const { r, g, b } = data.rgb;
   const { left, top } = data.dotPosition;
@@ -45,6 +47,6 @@ colorWheel.addListener('colorChange', (data: IColorValue) => {
 });
 
 setTimeout(() => {
-  colorWheel.setColor("#3769ff");
+  colorWheel.setColor("#ff2cd0");
 }, 2000);
 export { };

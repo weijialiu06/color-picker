@@ -59,11 +59,7 @@ colorPicker.addListener('colorChange', (data: IColorValue) => {
 
 ### setDotPosition(left: number, y: number)
 
-设置滑块的位置,
-
-### setColor(hexColor: string)
-
-设置 picker 当前的颜色，hexColor 是一个 16 进制的颜色值，如： #3769ff
+设置滑块的位置
 
 ## demo
 
