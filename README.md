@@ -74,27 +74,24 @@ colorPicker.addListener('colorChange', (data: IColorValue) => {
 **js**
 
 ```js
-@Component
-export default class App extends Vue {
-  mounted() {
-    const colorWheel = new ColorWheel({
-      size: 535,
-      containerId: 'color-picker',
-      pipeCircleSize: 100,
-      dotClass: 'dot-class',
-      dotPositon: {
-        left: 100,
-        top: 400,
-      },
-    });
+import ColorWheel from 'circular-color-picker';
 
-    colorWheel.addListener('colorChange', (data: IColorValue) => {
-      console.log(data);
-    });
+const colorWheel = new ColorWheel({
+  size: 535,
+  containerId: 'color-picker',
+  pipeCircleSize: 100,
+  dotClass: 'dot-class',
+  dotPositon: {
+    left: 100,
+    top: 400,
+  },
+});
 
-    setTimeout(() => {
-      colorWheel.setDotPosition(300, 400);
-    }, 3000);
-  }
-}
+colorWheel.addListener('colorChange', (data: IColorValue) => {
+  console.log(data);
+});
+
+setTimeout(() => {
+  colorWheel.setDotPosition(300, 400);
+}, 3000);
 ```
